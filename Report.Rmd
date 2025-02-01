@@ -1,0 +1,181 @@
+# DATA607 Assignment 1 Report
+
+-   **Author**: Ali Ahmed
+-   **Date of Submission**: 1-31-2025
+
+------------------------------------------------------------------------
+
+## Introduction
+
+The article that I chose to read on 538 is called ["What Do Men Think It Means To Be A Man?"](https://fivethirtyeight.com/features/what-do-men-think-it-means-to-be-a-man/). The article is related to what men think about masculinity in light of the #MeToo movement and societal pressure on gender roles. The data used in the article is actually a survey in which 1600 men took part in to answer questions related to masculinity across multiple dimensions include:
+
+-   male identity
+-   concerns & worries
+-   men at work
+-   dating & relationships
+
+Based on my assessment of the article, I was curious to learn more about how men in the survey felt when it comes to concerns regarding their physical health as that's an important factor to me.
+
+------------------------------------------------------------------------
+
+## Solution
+
+### Reading the Data
+
+Before investigating the question of interest to me, I wanted to get a quick preview of the survey data that FiveThirtyEight used in the article. In order to obtain this data, I managed to find an associated `.csv` file linked on the FiveThirtyEight article page on the website which redirected me to a [GitHub repository](https://github.com/fivethirtyeight/data/tree/master/masculinity-survey).
+
+```{r}
+# Load the survey data from 538
+url <- "https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/masculinity-survey/masculinity-survey.csv"
+
+# Create a DataFrame from the URL
+df <- read.csv(url)
+
+head(df)
+```
+
+## Data Transformation
+
+Based on the initial preview of the data, I felt that the survey questions, options, and responses were really hard to decipher based on how the Data Frame was already presented. In order to make the entire Data Frame more interpretative, I wanted to create a data structure that allows me to easily map the various questions asked in the survey to the options and corresponding responses to those options for each survey respondent. Since this data structure seems like a reference table, I figured the most suitable built-in data structure in R to use was the `list`. Therefore, I proceeded to create a list where the questions are the keys and the responses are the values. In order to make this transformation reusable, I created a R function called `list_transform` which allows me to pass in any Data Frame, a column to use as the key mapper, and the specific columns I want to leverage for mapping the values to the keys.
+
+```{r}
+list_transform <- function(df, key_col, value_cols) { 
+  
+  # Ensure key_col and value_cols exist in the dataframe
+  if (!(key_col %in% colnames(df))) {
+    stop("Invalid key column name provided.")
+  }
+  if (!all(value_cols %in% colnames(df))) {
+    stop("One or more value columns do not exist in the dataframe.")
+  }
+  
+  # Identify rows where the key column is not empty or NA
+  key_indices <- which(df[[key_col]] != "" & !is.na(df[[key_col]]))
+  
+  # Initialize named list
+  result_list <- list()
+  
+  for (i in seq_along(key_indices)) { 
+    start_idx <- key_indices[i] 
+    end_idx <- ifelse(i < length(key_indices), key_indices[i + 1] - 1, nrow(df))
+  
+  
+  
+    # Extract relevant rows for the value columns
+    
+    subset_df <- df[start_idx:end_idx, value_cols, drop = FALSE]
+  
+    # Remove completely empty rows
+    
+    subset_df <- subset_df[rowSums(is.na(subset_df) | subset_df == "") < length(value_cols), , drop = FALSE]
+  
+    key <- df[[key_col]][start_idx]
+  
+    # Append values for the same key
+    
+    if (key %in% names(result_list)) { 
+      result_list[[key]] <- bind_rows(result_list[[key]], subset_df) } 
+    else { 
+      result_list[[key]] <- subset_df 
+      } 
+    
+    }
+  
+  return(result_list) 
+}
+```
+
+I then renamed the first two columns to refer to the `Questions` and `Options` associated with each question before applying the `list_transform` function on the `Questons` column as the key and an array containing `Options`, `Adult.Men`, and `Age` as the value columns. I also validated whether the individual questions were showing up as keys by using the `names()` function. In order to avoid typing the question strictly as a string when trying to refer to a particular set of questions and options, I ended up leveraging an index on the `key_names` variable to easily have a numerical way of getting the exact string I needed when referencing the list. I also transformed this into a R function for re usability.
+
+```{r}
+# Rename the first two columns
+
+colnames(df)[1:2] <- c('Questions', 'Options')
+
+# Apply the list_transform to the first two columns
+
+ref_list <- list_transform(df, 'Questions', c('Options', 'Adult.Men', 'Age'))
+
+print(ref_list)
+
+# Key Names
+
+key_names <- names(ref_list)
+
+print(key_names)
+
+# Get the index of choice
+
+col_to_idx <- key_names[34]
+
+print(col_to_idx)
+
+# Function of above workflow
+key_value_view <- function(key_names, idx, kv_map) {
+  # Check if idx is valid
+  if (idx >= length(key_names) || idx < 1) {
+    stop("Index is out of range for key_names.")
+  }
+  
+  # Get the exact key
+  key_to_select <- key_names[idx]
+  
+  # Check if the key exists in kv_map
+  if (!key_to_select %in% names(kv_map)) {
+    stop("Key not found in kv_map.")
+  }
+  
+  return(kv_map[[key_to_select]])  # Use double brackets for list extraction
+}
+```
+
+### Keyword Search for Referencing Question / Option Pairs
+
+In order to flexibly get specific question / option pairs, I wanted to create a mechanism that allows me to type in a keyword of interest to find the respondent data associated with my question much faster rather than sifting through each question / options pair one-by-one. To achieve this, I needed to come up with a way to perform sub-string search within R and so I ended up using the `grepl()` function which can perform sub-string search and then I built a function in R that sifts through the key names and finds which key name or hits of key names contain the keyword that I was interested to find. I then ended up using this mechanism to search for `physical health` in order to get the answer to my original question.
+
+```{r}
+keyword_search <- function(key_names, keyword) { 
+  
+  # Find indices where the substring is found 
+  indices <- which(grepl(keyword, key_names, ignore.case=TRUE))
+
+  # Return the indices (0 if no match) 
+  if (length(indices) == 0) { 
+    return(0) 
+  } else { 
+      return(c(key_names[indices], indices)) 
+    } 
+}
+
+# Function Call
+
+result <- key_value_view(key_names, 34, ref_list) 
+
+print(result)
+
+# Key Names Associated with the Options
+
+option_key_names <- df$Options
+
+# Keyword Search
+
+example_search <- keyword_search(option_key_names, 'physical health')
+
+print(example_search)
+
+# Row in the DataFrame where the physical health option
+
+df_row = df[example_search[2],]
+
+print(df_row$Adult.Men)
+```
+
+## Findings and Recommendations
+
+### Findings
+
+Based on the analysis above, I now know that **49%** of the Adult Men respondents of the survey expressed concern or worry over their physical health. I wish there was more qualitative information to break down the reasons for concern or worry over physical health since the emphasis on the survey was not solely based on masculinity, but also based on its association post #MeToo movement and societal pressures. I hypothesize that there is increasing societal pressure for men to look and feel a certain way as physical health may have a lot to do with appearance, but then I also saw that `appearance` was a separate category which was further separated by various facets such as hairline and genitalia so clearly the physical health may have been too broad to make a proper assessment.
+
+### Recommendations
+
+One recommendation I have for the survey creators is to consider breaking down physical health into components similar to some of the other categories / subcategories that exist within **Concerns and Worries** so it would be possible to better understand what is the specific aspect (s) of physical health that generates concern or worry for men and what that essentially means for their masculinity.
