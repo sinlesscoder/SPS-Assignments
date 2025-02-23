@@ -1,0 +1,108 @@
+---
+title: "assignment - tidying and transforming data"
+author: "Ali Ahmed"
+date: "2025-02-23"
+output: html_document
+---
+
+### Introduction
+
+This report presents an analysis of airline arrival delays for two airlines using R. The original dataset is essentially a chart that later became a CSV file which I generated called data.csv.
+
+The view includes flight arrival records for two airlines, Alaska Airlines and AM West, across five major U.S. airports. The objective is to transform, tidy, and analyze the data to compare delays between the two airlines.
+
+The comma separated value representation of the above view is shown below.
+
+`,,Los Angeles,Phoenix,San Diego,San Francisco,Seattle`
+
+`ALASKA,On Time,497,221,212,503,1841`
+
+`,Delayed,62,12,20,102,305`
+
+`AM WEST,On Time,694,4840,383,320,201`
+
+`,Delayed,117,415,65,129,61`
+
+### Implementation
+
+-   Based on the chart shown above, it is clear that the data is not yet ready for performing analytics. There are some spaces that represent empty strings which need to be replaced with missing values and then there needs to be some filtering and shape changes to the data to make it more accessible for comparing the rows for each airline. The steps I took to perform the transformation of the data from the original view to the final output is shown below.
+-   Step 1: Data Import The dataset is read into R from the CSV file I created using the read.csv() function.
+
+```{r}
+# Import tidyverse
+library(tidyverse)
+library(tibble)
+
+# Visualization libraries
+library(ggplot2)
+library(reshape2)
+
+# URL to the data
+df <- read.csv("c:/Users/Ali/Documents/R-documents/data.csv", header = TRUE)
+
+```
+
+### Step 2: Data Cleaning
+
+To clean the dataset:
+
+-   Replacing Empty Strings with Missing Values : The DataFrame representation in R has missing values in areas which should be NA values. -- This transformation was applied using the fill() function coming from tidyverse.
+-   Filtering for Delays: Rows are filtered to only retain delayed flights that come from the two different airlines.
+-   Dropping Unnecessary Columns: The column pertaining to the status of the flight is removed to focus on numeric analysis of the delayed flights since the filtering is already done.
+
+```{r}
+# Clean missing airline names after replacing strings with NA values
+df_clean <- df %>%
+  mutate(X = ifelse(X == "", NA, X)) %>%
+  fill(X, .direction = "down")
+
+# Filter for delayed flights
+df_filtered <- df_clean %>%
+  # Filtering the status column to solely retrieve the delayed rows
+  filter(X.1 == "Delayed") %>%
+  
+  # Dropping the column pertaining to flight status
+  select(-X.1)
+```
+
+### Step 3: Data Transformation
+
+The dataset is transposed so that specific airports become the rows instead of columns. After transposition, column names are reassigned to easily compare the delays from both airlines.
+
+```{r}
+# Transpose and rename columns
+df_transposed <- df_filtered %>%
+  t() %>%
+  as.data.frame()
+
+# Temporary names of transposed DataFrame columns
+print(names(df_transposed)) # Leads to V1 and V2
+
+# Rename columns to reflect the airlines and the fact that the rows pertain to delays from each major airport.
+df_renamed <- df_transposed[-1,] %>%
+  rename(Alaska_Delayed = "V1", AM_WEST_Delayed = "V2")
+
+# Convert row names into a column called Airport for easy identification
+## Index to Column Mapping
+df_renamed <- rownames_to_column(df_renamed, var="Airport")
+```
+
+### Analysis and Findings
+
+Visualizations - Bar Chart - A comparative visualization of the number of delays per airport.
+
+-   The associated R code with the bar chart is shown below. ggplot2 is used to create the bar chart, and ggsave is used to save the chart as a PNG file.
+
+```{r}
+# Bar Chart
+ggplot(df_renamed, aes(x = Airport)) +
+  geom_bar(aes(y = AM_WEST_Delayed, fill = "AM West"), stat = "identity", position = "dodge") +
+  geom_bar(aes(y = Alaska_Delayed, fill = "Alaska Airlines"), stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("Alaska Airlines" = "gold", "AM West" = "orangered")) +
+  labs(title = "Comparison of Delayed Flights by Airport", x = "Airport", y = "Number of Delayed Flights") +
+  theme_minimal()
+
+ggsave("bar_chart_delayed_flights.png", width = 8, height = 5, dpi = 300)
+```
+
+From the visualization, it is clear that AM West has significantly more delays at majority of the airports, while Alaska Airlines has a higher number of delays at Seattle, but is also very close to the number of delays at AM West which is indicated by the bar eclipsing any red colored bar from appearing at the location of Seattle.
