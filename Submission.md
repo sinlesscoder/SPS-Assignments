@@ -84,7 +84,12 @@ These tables are in 3NF because:
 - `table_3nf_courses` now references instructors using InstructorID.
 - `table_3nf_instructors` contains instructor-specific information.
 
-By structuring the data in this way, data redundancy is eliminated and there is improved data integrity across the tables.
+#### Benefits
+
+1. Each table has a singular primary key which can be leveraged as a foreign key when joining with other tables.
+2. The way the data is organized is that is separates out concepts in the tables (e.g. student information) from other concepts which implies that the data is more modular and easier to maintain.
+3. There is improved query performance due to the fact that there are less scans of duplicate data since the normal form is performing deduplication.
+4. It is easier to expand upon the normalized tables for further performance enhancements by adding indexes on the primary keys easily and also ensuring that joins are not going through any duplicates.
 
 ### Question 2
 
@@ -171,18 +176,65 @@ The expression above has extra `\` after the `.*` characters not surrounded by `
 
 ### Question 4
 
-- Expression that starts and ends with the same character.
+- In order to test the regular expressions I generated for the examples, I created a reusable R function, `match_strings_with_regex`, shown below.
 
-    - `(.).*\1`
+```r
+# R function to match expression with string array
+match_strings_with_regex <- function(regex, string_array) {
+  matches <- sapply(string_array, function(string) {
+    grepl(regex, string)
+  })
+  return(string_array[matches])
+}
+```
+
+> Expression that starts and ends with the same character.
+
+- `(.).*\1`
+
+#### R Code
+
+```r
+## Word is "radar"
+## Expression is: (.).*\1
+## Expected output: "radar"
+word <- c("radar", "r", "test")
+expression <- "(.).*\\1"
+output <- match_strings_with_regex(expression, word)
+```
 
 ---
 
-- Expression that contains a repeated pair of letters (e.g. "church" contains "ch" repeated twice).
+> Expression that contains a repeated pair of letters (e.g. "church" contains "ch" repeated twice).
 
-    - `(..).*\1`
+- `(..).*\1`
+
+#### R Code
+
+```r
+## Word is "church"
+## Expression is: (..).*\1
+## Expected output: "church"
+word <- c("church", "r", "test")
+expression <- "(..).*\\1"
+output <- match_strings_with_regex(expression, word)
+print(output)
+```
 
 ---
 
 - Expression in which one character is repeated in at least three places (e.g. "eleven" contains three "e"'s)
 
     - `(.).*\1.*\1`
+
+#### R Code
+
+```r
+## Word is "eleven"
+## Expression is (.).*\1.*\1
+## Expected output: "eleven"
+word <- c("eleven", "r", "test")
+expression <- "(.).*\\1.*\\1"
+output <- match_strings_with_regex(expression, word)
+print(output)
+```
