@@ -16,7 +16,7 @@ Chess tournaments generate a wealth of data that can be analyzed to extract mean
 #### Data Extraction
 The dataset is read from an external source using the following command:
 ```r
-url <- "https://ashfaq-nsclc-dataset.s3.us-east-1.amazonaws.com/ali_datasets/cuny_sps/data-607/project-one/tournamentinfo.txt"
+url <- "/project-one/tournamentinfo.txt"
 df <- read.csv(file = url, sep = "\t")
 ```
 This loads the chess cross-table into a dataframe.
