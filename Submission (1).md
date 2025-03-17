@@ -194,7 +194,7 @@ library("xtable")
 
 # Get the URL
 
-url <- "https://ashfaq-nsclc-dataset.s3.us-east-1.amazonaws.com/ali_datasets/cuny_sps/data-607/assignment-5/assignment.csv"
+url <- "c:/Users/Ali/Documents/R-documents/data607.csv"
 
 file_path <- "data/assignments/assignment_five/assignment.csv"
 
