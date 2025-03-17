@@ -196,9 +196,7 @@ library("xtable")
 
 url <- "c:/Users/Ali/Documents/R-documents/data607.csv"
 
-file_path <- "data/assignments/assignment_five/assignment.csv"
-
-data <- read.csv(file_path)
+data <- read.csv(url)
 
 print(head(data))
 
