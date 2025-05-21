@@ -1,0 +1,76 @@
+---
+title: "Scenario Design Analysis of Amazon's Recommender System"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Introduction
+
+Amazon.com is one of the most well-known e-commerce platforms in the world. A key driver of its success is its highly effective recommender system, which plays a crucial role in personalizing the shopping experience, increasing user engagement, and boosting sales. This report uses **scenario design** to analyze Amazon’s recommender system from both the organization's and the customer’s perspectives. It also includes insights reverse-engineered from Amazon’s interface and external research, and offers recommendations for future improvements.
+
+## 1. Scenario Design Analysis
+
+### For the Organization (Amazon)
+
+**1. Who are the target users?**  
+Amazon’s target users include individual consumers, Prime members, and third-party sellers. These users engage with a wide range of product categories, from electronics and books to groceries and clothing.
+
+**2. What are the users’ key goals?**  
+Users want to discover relevant products, receive personalized shopping suggestions, save time browsing, and make well-informed purchasing decisions.
+
+**3. How can the website help them achieve those goals?**  
+Amazon helps users achieve their goals through personalized product recommendations such as “Customers who bought this also bought,” “Inspired by your browsing history,” and “Recommended for you.” These suggestions use collaborative filtering to leverage user behavior data and enhance product discovery.
+
+### For the Customers
+
+**1. Who are the users?**  
+From a customer’s perspective, users include casual shoppers, frequent buyers, and users looking for specific products or gifts.
+
+**2. What are their goals?**  
+Customers want to easily find products they need, discover new and relevant items they hadn’t considered, and get good value for their money.
+
+**3. How can the system help them?**  
+The recommendation engine supports these goals by providing contextually relevant suggestions based on previous purchases, browsing history, shopping cart activity, and what similar users have done. For example, if a user buys a phone, the system may recommend a compatible phone case or screen protector.
+
+## 2. Reverse Engineering the System
+
+Amazon’s interface suggests that the recommendation engine is embedded throughout the user journey—from the home page to product detail pages, and even in the shopping cart.
+
+Key observed features:
+- **“Recommended for you”** on the homepage is tailored based on browsing and purchase history.
+- **“Frequently bought together”** and **“Customers who bought this item also bought”** on product pages use co-purchase and clickstream data.
+- **“Keep shopping for…”** nudges repeat or recurring purchases based on past behavior.
+
+According to the seminal paper by Linden, Smith, and York (2003), Amazon uses **item-to-item collaborative filtering**. Instead of computing similarity between users (which is computationally expensive), it compares items by how frequently they are co-interacted with. This enables scalable and real-time recommendations.
+
+The system avoids reliance on user demographics or reviews in most cases and instead leverages behavior-based signals like:
+- Co-purchase patterns
+- Browsing history
+- Cart additions and removals
+- Click-through data
+
+## 3. Recommendations for Improvement
+
+While Amazon's recommender system is highly effective, there are opportunities for refinement:
+
+**1. Improve Diversity and Serendipity**  
+Amazon’s system can become echo-chamber-like, reinforcing previous behavior. Adding occasional “surprise” recommendations or cross-category suggestions could improve product discovery and user delight.
+
+**2. Incorporate Sentiment-Aware Recommendations**  
+Mining product reviews and using sentiment analysis can help Amazon recommend products that are not just popular, but **positively reviewed**—especially useful for subjective products like clothing or media.
+
+**3. Add Explicit User Controls**  
+Allowing users to **adjust preferences** or **filter recommendations** (e.g., “Show me less tech” or “More eco-friendly items”) could make the system more transparent and user-aligned.
+
+**4. Improve Cold Start Handling**  
+New users and new products face the “cold start” problem. Leveraging additional metadata (product categories, descriptions) and onboarding questionnaires could help bootstrap recommendations more quickly.
+
+## Conclusion
+
+Amazon’s recommender system is a foundational pillar of its user experience and business model. Through effective use of item-to-item collaborative filtering, Amazon delivers high-quality recommendations that enhance shopping efficiency and customer satisfaction. Using scenario design helped us identify user goals and highlight specific areas where Amazon can enhance its system to increase engagement, transparency, and user satisfaction even further.
+
+## References
+
+- Linden, G., Smith, B., & York, J. (2003). *Amazon.com Recommendations: Item-to-Item Collaborative Filtering*. IEEE Internet Computing.
+- Temkin, B. D. (2004). *Scenario Design: A Disciplined Approach to Customer Experience*, Forrester Research.
