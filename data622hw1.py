@@ -16,7 +16,7 @@ print(bank_marketing.metadata)
 # variable information 
 print(bank_marketing.variables) 
 
-df = X.copy()       # make a copy of features
+df = X.copy()     
 df["y"] = y 
 
 print("Dataset shape:", df.shape)
@@ -77,3 +77,4 @@ for c in cat_cols:
     plt.ylabel("Percent")
     plt.tight_layout()
     plt.show()
+
